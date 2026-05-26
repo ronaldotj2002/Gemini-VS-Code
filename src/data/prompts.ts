@@ -1,105 +1,83 @@
-export interface PromptTemplate {
+export interface EnterprisePrompt {
   id: string;
   title: string;
   description: string;
-  category: 'refactor' | 'test' | 'explain' | 'doc' | 'debug';
-  promptText: string;
+  commandSyntax: string;
+  fullPrompt: string;
+  strategyName: string;
 }
 
-export const promptsData: PromptTemplate[] = [
+export const enterprisePrompts: EnterprisePrompt[] = [
   {
-    id: 'refactor-clean-code',
-    title: 'Refatoração para Clean Code',
-    description: 'Reescreva o código aplicando princípios do Clean Code, SOLID e reduzindo complexidade cognitiva.',
-    category: 'refactor',
-    promptText: `Refatore o seguinte trecho de código para melhorar a legibilidade, manutenibilidade e desempenho. 
-Siga os princípios do Clean Code e SOLID:
-1. Elimine aninhamentos desnecessários (early return).
-2. Use nomes de variáveis e funções altamente explicativos.
-3. Se aplicável, extraia funções menores com responsabilidade única.
+    id: 'workspace-map',
+    title: 'Mapear a Arquitetura Geral',
+    description: 'Use este prompt quando abrir o projeto pela primeira vez para que o Gemini Code Assist faça um "reconhecimento" de caminhos e sugira onde os principais fluxos rodam.',
+    commandSyntax: '@workspace Onde estão definidos...',
+    fullPrompt: `@workspace
+Preciso entender a arquitetura deste projeto de ponta a ponta. Com base em todos os arquivos indexados no workspace:
+1. Explique como está organizada a nossa estrutura de pastas (arquitetura).
+2. Onde estão localizados os arquivos de rotas/endpoints da API, conexões de banco de dados e tipos TypeScript principais?
+3. Qual é o fluxo típico de uma requisição de ponta a ponta?
 
-Aqui está o código:
-\`\`\`
-[Cole seu código aqui]
-\`\`\``
+Por favor, inclua caminhos relativos de arquivos existentes para facilitar a minha navegação local.`,
+    strategyName: 'Reconhecimento de Terreno'
   },
   {
-    id: 'refactor-tailwind-perf',
-    title: 'Otimização React + Tailwind',
-    description: 'Otimize componentes React, aplicando boas práticas de renderização e Tailwind CSS responsivo.',
-    category: 'refactor',
-    promptText: `Analise o componente React abaixo e me sugira melhorias focadas em:
-1. Evitar re-renders desnecessários (useMemo, useCallback onde apropriado).
-2. Simplificação de classes Tailwind CSS (use de cn ou redução de duplicidade).
-3. Acessibilidade (atributos ARIA, contraste) e design responsivo.
+    id: 'bug-localizer-stack',
+    title: 'Localizar Bug através de Stack Trace ou Log',
+    description: 'Cole o log de erro ou stack trace do seu terminal e utilize o index da workspace para apontar as linhas culpadas.',
+    commandSyntax: '@workspace Analise o seguinte erro...',
+    fullPrompt: `@workspace
+Meu backend ou frontend disparou o seguinte erro em tempo de execução:
 
-Componente:
-\`\`\`tsx
-[Cole seu componente React aqui]
-\`\`\``
+----------
+[COLE O LOG DE ERRO OU STACK TRACE DO SEU TERMINAL AQUI]
+----------
+
+Com base no erro acima e no codebase indexado:
+1. Em quais arquivos e linhas exatas do projeto as falhas provavelmente originaram?
+2. Explique o motivo conceitual do porquê esse erro acontece (ex: null-pointer, tipagem, import quebrado).
+3. Escreva o código corretivo exato para o arquivo relevante.`,
+    strategyName: 'Pinpointing Estático por Log'
   },
   {
-    id: 'test-coverage',
-    title: 'Gerador de Testes Unitários',
-    description: 'Gere casos de teste abrangentes usando Jest ou Vitest, incluindo caminhos felizes e de erro.',
-    category: 'test',
-    promptText: `Escreva uma suíte de testes unitários abrangente para a função/classe abaixo.
-Use [Jest/Vitest] com testing-library se for um componente visual, ou testes puros caso seja lógica pura.
-Cubra os seguintes cenários:
-1. Caso feliz (retorno esperado com entradas válidas).
-2. Entradas nulas, indefinidas ou vazias (edge cases).
-3. Tratamento de exceções e erros esperados.
+    id: 'trace-data-flow',
+    title: 'Mapear Fluxo de Dados e Dependências',
+    description: 'Descubra a árvore de chamadas de uma função ou campo de dados para analisar efeitos colaterais e encontrar o arquivo correto que deve ser alterado.',
+    commandSyntax: '@workspace Acompanhe a variável...',
+    fullPrompt: `@workspace
+Preciso investigar o ciclo de vida e o fluxo de dados para a seguinte funcionalidade:
+"Funcionalidade: [Escreva o fluxo, ex: fluxo de checkout ou atualização de usuário]"
 
-Código a ser testado:
-\`\`\`
-[Cole seu código aqui]
-\`\`\``
+1. Identifique quais arquivos participam deste fluxo (Controllers, Auxiliares, Camada de Serviços, Redux/Context).
+2. Ao realizar uma alteração no arquivo [Escreva o nome do arquivo, ex: UserRoutes.ts], quais outros arquivos indexados no workspace podem sofrer efeitos colaterais ou quebrar tipos?
+
+Destaque as conexões hierárquicas em formato de diagrama simples.`,
+    strategyName: 'Análise de Impacto Semântico'
   },
   {
-    id: 'explain-architecture',
-    title: 'Explicação de Código Complexo',
-    description: 'Explica o código linha por linha ou conceitualmente para desenvolvedores juniores.',
-    category: 'explain',
-    promptText: `Explique detalhadamente o funcionamento do código abaixo. 
-Por favor:
-1. Dê uma visão geral de alto nível (o que ele faz).
-2. Explique os blocos ou linhas cruciais, detalhando algoritmos específicos utilizados.
-3. Identifique potenciais gargalos de desempenho ou pontos cegos de segurança que um junior deveria saber.
-
-Código:
-\`\`\`
-[Cole seu código aqui]
-\`\`\``
+    id: 'test-gap-analysis',
+    title: 'Análise de Gaps de Teste pelo Workspace',
+    description: 'Peça para o Gemini rastrear o relacionamento entre seus arquivos de implementação e seus arquivos de teste para ver onde faltam mocks ou coberturas de regressão.',
+    commandSyntax: '@workspace Verifique a falta de testes...',
+    fullPrompt: `@workspace
+Quero melhorar a confiabilidade do nosso sistema. 
+1. Liste quais arquivos de funcionalidade principal em nosso workspace local não possuem arquivos de teste correspondentes.
+2. Com base no arquivo [Nome do arquivo, ex: PaymentProcessor.ts], gere um esqueleto de teste simulando as dependências corretas já existentes nas pastas do projeto.`,
+    strategyName: 'Auditoria de Regressão'
   },
   {
-    id: 'doc-jsdoc-ts',
-    title: 'Documentação JSDoc / TSDoc',
-    description: 'Adicione comentários detalhados de tipos, parâmetros e valores de retorno usando TSDoc.',
-    category: 'doc',
-    promptText: `Insira documentação explicativa e rigorosa no padrão JSDoc/TSDoc para as funções e tipos presentes no código a seguir.
-Explique detalhadamente cada parâmetro, tipo de entrada, tipo de retorno, e possíveis exceções disparadas.
+    id: 'compare-working-files',
+    title: 'Comparar com Padrões Existentes do Projeto',
+    description: 'Evite criar código desalinhado. Peça para o Gemini examinar um arquivo de código bom/padrão que já funciona e sugerir as correções no arquivo novo ou quebrado conforme os mesmos padrões.',
+    commandSyntax: '@workspace Siga o mesmo padrão de...',
+    fullPrompt: `@workspace
+Estou implementando ou atualizando o arquivo: [Arquivo para Corrigir/Adicionar, ex: src/controllers/OrderController.ts]
 
-Código:
-\`\`\`ts
-[Cole seu código aqui]
-\`\`\``
-  },
-  {
-    id: 'debug-find-bugs',
-    title: 'Detetive de Bugs e Vulnerabilidades',
-    description: 'Varra o código em busca de erros lógicos, vazamentos de memória e falhas comuns.',
-    category: 'debug',
-    promptText: `Atue como um Engenheiro de Qualidade e Segurança de Software sênior. 
-Analise minuciosamente o código abaixo em busca de:
-1. Bugs de lógica ou condições de corrida (race conditions).
-2. Problemas potenciais de segurança (injeções, falta de validação).
-3. Vazamento de recursos ou de memória.
+Quero que a estrutura siga exatamente as convenções, imports, tratamento de erro e padrões arquiteturais do arquivo de referência que já funciona: [Arquivo Saudável, ex: src/controllers/UserController.ts]
 
-Apresente as vulnerabilidades encontradas e forneça a versão corrigida do código.
-
-Código:
-\`\`\`
-[Cole seu código aqui]
-\`\`\``
+1. Faça uma análise comparativa e liste o que está desalinhado no primeiro arquivo.
+2. Reescreva as funções desalinhadas aplicando estritamente as melhores práticas copiadas do arquivo saudável.`,
+    strategyName: 'Garantia de Padronização Corporativa'
   }
 ];
