@@ -1,0 +1,6 @@
+{
+  "name": "Guia Gemini VS Code",
+  "description": "Um guia interativo e configurador para configurar o assistente Gemini no VS Code e atingir o máximo de produtividade.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
